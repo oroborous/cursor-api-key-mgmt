@@ -21,6 +21,7 @@ export default function Dashboard() {
   const [editingName, setEditingName] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
+  const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchApiKeys();
@@ -123,6 +124,16 @@ export default function Dashboard() {
       saveEdit(id);
     } else if (e.key === 'Escape') {
       cancelEditing();
+    }
+  };
+
+  const copyToClipboard = async (key: string, id: string) => {
+    try {
+      await navigator.clipboard.writeText(key);
+      setCopiedKeyId(id);
+      setTimeout(() => setCopiedKeyId(null), 1500);
+    } catch (err) {
+      setError('Failed to copy API key');
     }
   };
 
@@ -268,6 +279,21 @@ export default function Dashboard() {
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                               <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => copyToClipboard(apiKey.key, apiKey.id)}
+                          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                          title="Copy API key"
+                        >
+                          {copiedKeyId === apiKey.id ? (
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-green-500">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                            </svg>
+                          ) : (
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 16.5V19a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0020 19v-7.5A2.25 2.25 0 0017.75 9.25H15.5m-10-2.5A2.25 2.25 0 017.75 4.5h7.5A2.25 2.25 0 0117.5 6.75v7.5a2.25 2.25 0 01-2.25 2.25h-7.5A2.25 2.25 0 015 14.25v-7.5z" />
                             </svg>
                           )}
                         </button>

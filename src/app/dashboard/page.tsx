@@ -7,7 +7,7 @@ interface ApiKey {
   id: string;
   name: string;
   key: string;
-  createdAt: string;
+  created_at: string;
 }
 
 export default function Dashboard() {
@@ -22,6 +22,7 @@ export default function Dashboard() {
   const inputRef = useRef<HTMLInputElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
   const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null);
+  const [deletingKeyId, setDeletingKeyId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchApiKeys();
@@ -66,6 +67,7 @@ export default function Dashboard() {
   };
 
   const deleteApiKey = async (id: string) => {
+    setDeletingKeyId(id);
     try {
       const response = await fetch(`/api/keys/${id}`, {
         method: 'DELETE',
@@ -74,6 +76,8 @@ export default function Dashboard() {
       await fetchApiKeys();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setDeletingKeyId(null);
     }
   };
 
@@ -299,14 +303,29 @@ export default function Dashboard() {
                         </button>
                       </div>
                       <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                        Created: {new Date(apiKey.createdAt).toLocaleDateString()}
+                        Created: {new Date(apiKey.created_at).toLocaleDateString()}
                       </p>
                     </div>
                     <button
                       onClick={() => deleteApiKey(apiKey.id)}
-                      className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium"
+                      disabled={deletingKeyId === apiKey.id}
+                      className={`text-sm font-medium transition-opacity ${
+                        deletingKeyId === apiKey.id
+                          ? 'text-gray-400 cursor-not-allowed'
+                          : 'text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300'
+                      }`}
                     >
-                      Delete
+                      {deletingKeyId === apiKey.id ? (
+                        <div className="flex items-center gap-2">
+                          <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Deleting...
+                        </div>
+                      ) : (
+                        'Delete'
+                      )}
                     </button>
                   </div>
                 ))}
